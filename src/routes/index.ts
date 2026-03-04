@@ -1,0 +1,18 @@
+import { Router } from 'express';
+import health from '../modules/health/routes/health.route.js';
+import auth from '../modules/auth/routes/auth.route.js';
+import account from '../modules/users/routes/account.route.js';
+import user from '../modules/users/routes/user.route.js';
+import transaction from '../modules/users/routes/transaction.route.js';
+import waitlist from '../modules/waitlist/waitlist.routes.js';
+import admin from '../modules/admin/routes/admin.route.js';
+
+const router = Router();
+router.use('/health', health);
+router.use('/auth', auth);
+router.use('/account', account);
+router.use('/user', user);
+router.use('/transaction', transaction);
+router.use('/waitlist', waitlist);
+router.use('/admin', admin);
+export default router;

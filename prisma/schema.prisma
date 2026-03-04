@@ -1,0 +1,69 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL")
+}
+
+model User {
+  id            String     @id @default(uuid())
+  email         String     @unique
+  phone         String?    @unique
+  password_hash String
+  first_name    String?
+  last_name     String?
+  name          String?    // Combined name for compatibility
+  sliq_id       String     @unique // @username
+  kyc_level     Int        @default(1)
+  
+  // Auth & Roles
+  is_active     Boolean    @default(true)
+  roles         String[]   @default(["user"])
+  
+  // Wallet
+  wallet_address String?   @unique // EVM Address
+  wallet_type   String?    // "custodial" or "external"
+  
+  createdAt     DateTime   @default(now())
+  updatedAt     DateTime   @updatedAt
+
+  accounts      Account[]
+  transactions  Transaction[]
+}
+
+model Account {
+  id        String   @id @default(uuid())
+  userId    String
+  currency  String   // NGN, USD, KES, GHS, ETH
+  balance   Decimal  @default(0)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  user      User     @relation(fields: [userId], references: [id])
+}
+
+model Transaction {
+  id        String   @id @default(uuid())
+  userId    String
+  type      String   // CREDIT, DEBIT
+  amount    Decimal
+  currency  String
+  status    String   // PENDING, SUCCESS, FAILED
+  reference String   @unique
+  metadata  Json?
+  createdAt DateTime @default(now())
+
+  user      User     @relation(fields: [userId], references: [id])
+}
+
+model Waitlist {
+  id        String   @id @default(uuid())
+  email     String   @unique
+  firstName String?
+  lastName  String?
+  phone     String?
+  createdAt DateTime @default(now())
+}

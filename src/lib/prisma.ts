@@ -1,7 +1,9 @@
 import { PrismaClient } from '@prisma/client';
 
-// Optimized for serverless environments
-const prisma = new PrismaClient({
+// Singleton pattern for serverless
+const globalForPrisma = global as unknown as { prisma: PrismaClient };
+
+const prisma = globalForPrisma.prisma || new PrismaClient({
   log: process.env.NODE_ENV === 'development' ? ['query', 'error', 'warn'] : ['error'],
   datasources: {
     db: {
@@ -10,11 +12,8 @@ const prisma = new PrismaClient({
   },
 });
 
-// Graceful shutdown
 if (process.env.NODE_ENV !== 'production') {
-  process.on('beforeExit', async () => {
-    await prisma.$disconnect();
-  });
+  globalForPrisma.prisma = prisma;
 }
 
 export { prisma };

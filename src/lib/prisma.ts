@@ -1,16 +1,20 @@
 import { PrismaClient } from '@prisma/client';
 
+// Optimized for serverless environments
 const prisma = new PrismaClient({
-  log: ['query', 'error', 'warn'],
+  log: process.env.NODE_ENV === 'development' ? ['query', 'error', 'warn'] : ['error'],
+  datasources: {
+    db: {
+      url: process.env.DATABASE_URL,
+    },
+  },
 });
 
-prisma.$connect()
-  .then(() => {
-    console.log('✅ Database connected successfully');
-  })
-  .catch((error: unknown) => {
-    console.error('Failed to connect to database:', error);
-    process.exit(1);
+// Graceful shutdown
+if (process.env.NODE_ENV !== 'production') {
+  process.on('beforeExit', async () => {
+    await prisma.$disconnect();
   });
+}
 
 export { prisma };

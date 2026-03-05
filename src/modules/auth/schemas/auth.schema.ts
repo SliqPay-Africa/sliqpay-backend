@@ -27,6 +27,7 @@ export const signupSchema = z.object({
     email: z.string().trim().email(),
     password: z.string().min(8),
     phone: phoneSchema,
+    sliqId: z.string().trim().min(3).max(30).optional(), // User's chosen SliqID
     refCode: z.string().trim().optional()
   })
 });

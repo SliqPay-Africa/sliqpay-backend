@@ -9,8 +9,8 @@ import { UserRepositoryPrisma } from '../../users/repositories/user.prisma.repos
 import bcrypt from 'bcryptjs';
 
 export const handleSignup = async (req: Request, res: Response) => {
-  const { fname, lname, email, password, phone, refCode } = (req as any).body;
-  const { user, token } = await signup(fname, lname, email, password, phone, refCode);
+  const { fname, lname, email, password, phone, sliqId, refCode } = (req as any).body;
+  const { user, token } = await signup(fname, lname, email, password, phone, sliqId, refCode);
   const sess = await createSession({ userId: user.id });
   setSessionCookie(res, sess.id);
   res.cookie('accessToken', token, {

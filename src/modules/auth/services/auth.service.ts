@@ -13,20 +13,35 @@ function sign(userId: string) {
 }
 
 export function publicUser(u: any) {
-  return { id: u.id, email: u.email, firstName: u.first_name, lastName: u.last_name, createdAt: u.created_at };
+  return { 
+    id: u.id, 
+    email: u.email, 
+    firstName: u.first_name, 
+    lastName: u.last_name, 
+    sliqId: u.sliq_id,
+    createdAt: u.created_at 
+  };
 }
 
-export async function signup(fname: string, lname: string, email: string, password: string, phone?: string, referralCode?: string) {
+export async function signup(fname: string, lname: string, email: string, password: string, phone?: string, sliqId?: string, referralCode?: string) {
   const existing = await Repo.findByEmail(email);
   if (existing) {
     throw { status: 400, message: 'Email already registered' };
   }
+  
+  // Check if sliqId is already taken
+  if (sliqId) {
+    const sliqIdExists = await Repo.findBySliqId(sliqId);
+    if (sliqIdExists) {
+      throw { status: 400, message: 'SliqID already taken. Please choose another.' };
+    }
+  }
+  
   // Phone is optional - generate a unique placeholder if not provided
-  // TODO: Add phone collection to signup flow and make it required
   const phoneToUse = phone || `+000${randomUUID().replace(/-/g, '').slice(0, 11)}`;
   
   const passwordHash = bcrypt.hashSync(password, 10);
-  const user = await Repo.create({ email, firstName: fname, lastName: lname, passwordHash, phone: phoneToUse, referralCode });
+  const user = await Repo.create({ email, firstName: fname, lastName: lname, passwordHash, phone: phoneToUse, sliqId, referralCode });
   // Create a default NGN account with 25,000 starting balance
   try {
     await AccountRepositoryPrisma.create({ userId: user.id, balance: 25000, currency: 'NGN' });
@@ -41,10 +56,14 @@ export async function signup(fname: string, lname: string, email: string, passwo
     subject: 'Welcome to SliqPay! 🚀 Your wallet is ready.',
     html: `
       <h2 style="color: #111827; margin-top: 0;">Welcome aboard, ${fname}!</h2>
-      <p style="color: #374151; line-height: 1.6;">Your SliqPay account has been successfully created. We've also set up your default wallet and assigned you your unique SliqID: <strong>${user.sliq_id}</strong>.</p>
-      <p style="color: #374151; line-height: 1.6;">You can now start sending, receiving, and managing your money with ease.</p>
+      <p style="color: #374151; line-height: 1.6;">Your SliqPay account has been successfully created. We've also set up your default wallet and assigned you your unique SliqID.</p>
+      <div style="margin: 24px 0; padding: 16px; background-color: #f0f9ff; border-left: 4px solid #0ea5e9; border-radius: 4px;">
+        <p style="margin: 0; color: #0c4a6e; font-size: 14px; font-weight: 600;">Your SliqID</p>
+        <p style="margin: 8px 0 0 0; color: #0369a1; font-size: 18px; font-weight: 700;">${user.sliq_id}</p>
+      </div>
+      <p style="color: #374151; line-height: 1.6;">You can now start sending, receiving, and managing your money with ease. Your account comes with <strong>₦25,000</strong> to get you started!</p>
       <div style="margin-top: 24px; text-align: center;">
-        <a href="${env.FRONTEND_URL || '#'}" style="background-color: #111827; color: #ffffff; padding: 12px 24px; border-radius: 6px; text-decoration: none; font-weight: 600; font-size: 14px;">Go to Dashboard</a>
+        <a href="${env.FRONTEND_URL || 'https://sliqpay-frontend.vercel.app'}/dashboard" style="background-color: #111827; color: #ffffff; padding: 12px 24px; border-radius: 6px; text-decoration: none; font-weight: 600; font-size: 14px;">Go to Dashboard</a>
       </div>
     `
   });

@@ -7,7 +7,15 @@ export const UserRepositoryPrisma = {
   async findById(id: string) {
     return prisma.user.findUnique({ where: { id } });
   },
-  async create(data: { email: string; phone: string; firstName?: string | null; lastName?: string | null; passwordHash: string; referralCode?: string | null }) {
+  async findBySliqId(sliqId: string) {
+    return prisma.user.findUnique({ where: { sliq_id: `@${sliqId}` } });
+  },
+  async create(data: { email: string; phone: string; firstName?: string | null; lastName?: string | null; passwordHash: string; sliqId?: string | null; referralCode?: string | null }) {
+    // Use provided sliqId or generate a fallback
+    const sliqIdToUse = data.sliqId 
+      ? `@${data.sliqId}` 
+      : `@${data.firstName || 'user'}_${Math.floor(Math.random() * 10000)}`;
+    
     return prisma.user.create({
       data: {
         email: data.email,
@@ -15,7 +23,7 @@ export const UserRepositoryPrisma = {
         password_hash: data.passwordHash,
         first_name: data.firstName ?? null,
         last_name: data.lastName ?? null,
-        sliq_id: `@${data.firstName || 'user'}_${Math.floor(Math.random() * 10000)}`,
+        sliq_id: sliqIdToUse,
       },
     });
   },

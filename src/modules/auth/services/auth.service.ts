@@ -42,6 +42,14 @@ export async function signup(fname: string, lname: string, email: string, passwo
   
   // Phone is optional - generate a unique placeholder if not provided
   const phoneToUse = phone || `+000${randomUUID().replace(/-/g, '').slice(0, 11)}`;
+
+  // Check if phone is already registered
+  if (phone) {
+    const phoneExists = await Repo.findByPhone(phoneToUse);
+    if (phoneExists) {
+      throw { status: 400, message: 'Phone number already registered' };
+    }
+  }
   
   const passwordHash = bcrypt.hashSync(password, 10);
   

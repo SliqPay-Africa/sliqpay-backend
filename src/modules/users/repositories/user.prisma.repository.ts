@@ -4,6 +4,9 @@ export const UserRepositoryPrisma = {
   async findByEmail(email: string) {
     return prisma.user.findUnique({ where: { email } });
   },
+  async findByPhone(phone: string) {
+    return prisma.user.findUnique({ where: { phone } });
+  },
   async findById(id: string) {
     return prisma.user.findUnique({ where: { id } });
   },

@@ -22,6 +22,11 @@ export const handleSignup = async (req: Request, res: Response) => {
     }).status(201).json({ user, token });
   } catch (error: any) {
     console.error('Signup error:', error);
+    // Handle Prisma unique-constraint violations gracefully
+    if (error.code === 'P2002') {
+      const field = error.meta?.target?.[0] || 'field';
+      return res.status(400).json({ error: `${field.charAt(0).toUpperCase() + field.slice(1)} already registered` });
+    }
     const statusCode = error.status || 500;
     res.status(statusCode).json({ error: error.message || 'Signup failed' });
   }

@@ -6,6 +6,7 @@ import user from '../modules/users/routes/user.route.js';
 import transaction from '../modules/users/routes/transaction.route.js';
 import waitlist from '../modules/waitlist/waitlist.routes.js';
 import admin from '../modules/admin/routes/admin.route.js';
+import payment from '../modules/payment/routes/payment.route.js';
 
 const router = Router();
 router.use('/health', health);

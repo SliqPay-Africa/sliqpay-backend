@@ -67,3 +67,19 @@ model Waitlist {
   phone     String?
   createdAt DateTime @default(now())
 }
+
+model CryptoPayment {
+  id             String   @id @default(uuid())
+  txHash         String   @unique
+  sliqId         String
+  userId         String
+  amount         Float
+  network        String
+  phone          String
+  vtpassRef      String?
+  vtpassStatus   String?
+  vtpassResponse String?
+  status         String   @default("PENDING")
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+}

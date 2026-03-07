@@ -9,16 +9,22 @@ import { UserRepositoryPrisma } from '../../users/repositories/user.prisma.repos
 import bcrypt from 'bcryptjs';
 
 export const handleSignup = async (req: Request, res: Response) => {
-  const { fname, lname, email, password, phone, sliqId, refCode } = (req as any).body;
-  const { user, token } = await signup(fname, lname, email, password, phone, sliqId, refCode);
-  const sess = await createSession({ userId: user.id });
-  setSessionCookie(res, sess.id);
-  res.cookie('accessToken', token, {
-    httpOnly: true,
-    sameSite: env.NODE_ENV === 'production' ? 'none' : 'lax',
-    secure: env.NODE_ENV === 'production',
-    maxAge: 15 * 60 * 1000
-  }).status(201).json({ user });
+  try {
+    const { fname, lname, email, password, phone, sliqId, refCode } = (req as any).body;
+    const { user, token } = await signup(fname, lname, email, password, phone, sliqId, refCode);
+    const sess = await createSession({ userId: user.id });
+    setSessionCookie(res, sess.id);
+    res.cookie('accessToken', token, {
+      httpOnly: true,
+      sameSite: env.NODE_ENV === 'production' ? 'none' : 'lax',
+      secure: env.NODE_ENV === 'production',
+      maxAge: 15 * 60 * 1000
+    }).status(201).json({ user, token });
+  } catch (error: any) {
+    console.error('Signup error:', error);
+    const statusCode = error.status || 500;
+    res.status(statusCode).json({ error: error.message || 'Signup failed' });
+  }
 };
 
 export const handleLogin = async (req: Request, res: Response) => {
@@ -32,7 +38,7 @@ export const handleLogin = async (req: Request, res: Response) => {
       sameSite: env.NODE_ENV === 'production' ? 'none' : 'lax',
       secure: env.NODE_ENV === 'production',
       maxAge: 15 * 60 * 1000
-    }).json({ user });
+    }).json({ user, token });
   } catch (error: any) {
     const statusCode = error.status || 400;
     res.status(statusCode).json({ error: error.message || 'Login failed' });

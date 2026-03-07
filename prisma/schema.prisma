@@ -23,6 +23,9 @@ model User {
   is_active Boolean  @default(true)
   roles     String[] @default(["user"])
 
+  // Transaction PIN
+  transaction_pin_hash String? // bcrypt hash of 4-digit PIN
+
   // Wallet
   wallet_address       String? @unique // EVM Address
   wallet_type          String? // "custodial" or "external"

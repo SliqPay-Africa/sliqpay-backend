@@ -1,5 +1,6 @@
 import { Response } from 'express';
 import { PrismaClient } from '@prisma/client';
+import bcrypt from 'bcryptjs';
 import { AuthenticatedRequest } from '../../../common/middleware/auth.js';
 
 const prisma = new PrismaClient();
@@ -66,7 +67,57 @@ export const getProfile = async (req: AuthenticatedRequest, res: Response) => {
       sliq_id: user.sliq_id,
       walletAddress: user.wallet_address,
       walletType: user.wallet_type,
+      hasTransactionPin: !!user.transaction_pin_hash,
       accounts: user.accounts
     }
   });
+};
+
+/** Check if the user has a transaction PIN set */
+export const hasTransactionPin = async (req: AuthenticatedRequest, res: Response) => {
+  try {
+    const userId = req.user.id;
+    const user = await prisma.user.findUnique({ where: { id: userId }, select: { transaction_pin_hash: true } });
+    res.json({ hasPin: !!user?.transaction_pin_hash });
+  } catch (error) {
+    res.status(500).json({ error: 'Failed to check PIN status' });
+  }
+};
+
+/** Set or update the transaction PIN */
+export const setTransactionPin = async (req: AuthenticatedRequest, res: Response) => {
+  try {
+    const userId = req.user.id;
+    const { pin } = req.body;
+    if (!pin || typeof pin !== 'string' || !/^\d{4}$/.test(pin)) {
+      return res.status(400).json({ error: 'PIN must be exactly 4 digits' });
+    }
+    const pinHash = bcrypt.hashSync(pin, 10);
+    await prisma.user.update({ where: { id: userId }, data: { transaction_pin_hash: pinHash } });
+    res.json({ ok: true, message: 'Transaction PIN set successfully' });
+  } catch (error) {
+    res.status(500).json({ error: 'Failed to set PIN' });
+  }
+};
+
+/** Verify a transaction PIN */
+export const verifyTransactionPin = async (req: AuthenticatedRequest, res: Response) => {
+  try {
+    const userId = req.user.id;
+    const { pin } = req.body;
+    if (!pin || typeof pin !== 'string' || !/^\d{4}$/.test(pin)) {
+      return res.status(400).json({ error: 'PIN must be exactly 4 digits' });
+    }
+    const user = await prisma.user.findUnique({ where: { id: userId }, select: { transaction_pin_hash: true } });
+    if (!user?.transaction_pin_hash) {
+      return res.status(400).json({ error: 'No transaction PIN set. Please create one first.' });
+    }
+    const valid = bcrypt.compareSync(pin, user.transaction_pin_hash);
+    if (!valid) {
+      return res.status(401).json({ error: 'Incorrect PIN' });
+    }
+    res.json({ ok: true });
+  } catch (error) {
+    res.status(500).json({ error: 'Failed to verify PIN' });
+  }
 };

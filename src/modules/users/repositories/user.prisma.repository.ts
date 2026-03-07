@@ -36,4 +36,14 @@ export const UserRepositoryPrisma = {
       data: { password_hash: passwordHash },
     });
   },
+  async setTransactionPin(id: string, pinHash: string) {
+    return prisma.user.update({
+      where: { id },
+      data: { transaction_pin_hash: pinHash },
+    });
+  },
+  async getTransactionPinHash(id: string): Promise<string | null> {
+    const user = await prisma.user.findUnique({ where: { id }, select: { transaction_pin_hash: true } });
+    return user?.transaction_pin_hash ?? null;
+  },
 };

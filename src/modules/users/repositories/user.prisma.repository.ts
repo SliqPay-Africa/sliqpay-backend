@@ -10,7 +10,7 @@ export const UserRepositoryPrisma = {
   async findBySliqId(sliqId: string) {
     return prisma.user.findUnique({ where: { sliq_id: `@${sliqId}` } });
   },
-  async create(data: { email: string; phone: string; firstName?: string | null; lastName?: string | null; passwordHash: string; sliqId?: string | null; referralCode?: string | null }) {
+  async create(data: { email: string; phone: string; firstName?: string | null; lastName?: string | null; passwordHash: string; sliqId?: string | null; referralCode?: string | null; walletAddress?: string | null; walletType?: string | null; encryptedPrivateKey?: string | null }) {
     // Use provided sliqId or generate a fallback
     const sliqIdToUse = data.sliqId 
       ? `@${data.sliqId}` 
@@ -24,6 +24,9 @@ export const UserRepositoryPrisma = {
         first_name: data.firstName ?? null,
         last_name: data.lastName ?? null,
         sliq_id: sliqIdToUse,
+        wallet_address: data.walletAddress ?? null,
+        wallet_type: data.walletType ?? null,
+        encrypted_private_key: data.encryptedPrivateKey ?? null,
       },
     });
   },

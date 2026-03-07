@@ -64,6 +64,8 @@ export const getProfile = async (req: AuthenticatedRequest, res: Response) => {
       lastName: user.last_name,
       phone: user.phone,
       sliq_id: user.sliq_id,
+      walletAddress: user.wallet_address,
+      walletType: user.wallet_type,
       accounts: user.accounts
     }
   });

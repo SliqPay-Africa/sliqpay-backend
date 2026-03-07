@@ -24,8 +24,9 @@ model User {
   roles     String[] @default(["user"])
 
   // Wallet
-  wallet_address String? @unique // EVM Address
-  wallet_type    String? // "custodial" or "external"
+  wallet_address       String? @unique // EVM Address
+  wallet_type          String? // "custodial" or "external"
+  encrypted_private_key String? // AES-256-GCM encrypted private key
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt

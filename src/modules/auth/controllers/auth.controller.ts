@@ -15,7 +15,7 @@ export const handleSignup = async (req: Request, res: Response) => {
   setSessionCookie(res, sess.id);
   res.cookie('accessToken', token, {
     httpOnly: true,
-    sameSite: 'lax',
+    sameSite: env.NODE_ENV === 'production' ? 'none' : 'lax',
     secure: env.NODE_ENV === 'production',
     maxAge: 15 * 60 * 1000
   }).status(201).json({ user });
@@ -29,13 +29,13 @@ export const handleLogin = async (req: Request, res: Response) => {
     setSessionCookie(res, sess.id);
     res.cookie('accessToken', token, {
       httpOnly: true,
-      sameSite: 'lax',
+      sameSite: env.NODE_ENV === 'production' ? 'none' : 'lax',
       secure: env.NODE_ENV === 'production',
       maxAge: 15 * 60 * 1000
     }).json({ user });
   } catch (error: any) {
     const statusCode = error.status || 400;
-    res.status(statusCode).json({ error: { message: error.message } });
+    res.status(statusCode).json({ error: error.message || 'Login failed' });
   }
 };
 
@@ -49,7 +49,7 @@ export const handleLogout = async (req: Request, res: Response) => {
   clearSessionCookie(res);
   res.clearCookie('accessToken', {
     httpOnly: true,
-    sameSite: 'lax',
+    sameSite: env.NODE_ENV === 'production' ? 'none' : 'lax',
     secure: env.NODE_ENV === 'production'
   }).status(204).send();
 };
@@ -88,7 +88,7 @@ export const handleResetPassword = async (req: Request, res: Response) => {
   const { token, password } = (req as any).body;
   const userId = await consumeResetToken(token);
   if (!userId) {
-    return res.status(400).json({ error: { code: 'INVALID_OR_EXPIRED', message: 'Invalid or expired reset token.' } });
+    return res.status(400).json({ error: 'Invalid or expired reset token.' });
   }
   const hash = bcrypt.hashSync(password, 10);
   await Repo.updatePassword(userId, hash);

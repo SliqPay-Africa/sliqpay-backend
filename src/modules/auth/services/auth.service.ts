@@ -5,6 +5,7 @@ import jwt from 'jsonwebtoken';
 import { randomUUID } from 'crypto';
 import { env } from '../../../config/env.js';
 import { sendMail } from '../../../common/utils/email.js';
+import { generateWallet } from '../../../common/utils/wallet.js';
 
 const Repo = UserRepositoryPrisma;
 
@@ -19,6 +20,8 @@ export function publicUser(u: any) {
     firstName: u.first_name, 
     lastName: u.last_name, 
     sliqId: u.sliq_id,
+    walletAddress: u.wallet_address || null,
+    walletType: u.wallet_type || null,
     createdAt: u.created_at 
   };
 }
@@ -41,7 +44,16 @@ export async function signup(fname: string, lname: string, email: string, passwo
   const phoneToUse = phone || `+000${randomUUID().replace(/-/g, '').slice(0, 11)}`;
   
   const passwordHash = bcrypt.hashSync(password, 10);
-  const user = await Repo.create({ email, firstName: fname, lastName: lname, passwordHash, phone: phoneToUse, sliqId, referralCode });
+  
+  // Auto-generate a custodial EVM wallet
+  const wallet = generateWallet();
+  
+  const user = await Repo.create({ 
+    email, firstName: fname, lastName: lname, passwordHash, phone: phoneToUse, sliqId, referralCode,
+    walletAddress: wallet.address,
+    walletType: 'custodial',
+    encryptedPrivateKey: wallet.encryptedPrivateKey,
+  });
   // Create a default NGN account with 25,000 starting balance
   try {
     await AccountRepositoryPrisma.create({ userId: user.id, balance: 25000, currency: 'NGN' });

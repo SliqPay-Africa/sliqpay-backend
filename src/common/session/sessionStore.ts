@@ -55,7 +55,7 @@ function cookieOptions(): CookieOptions {
   return {
     httpOnly: true,
     secure: isProd,
-    sameSite: isProd ? 'strict' : 'lax',
+    sameSite: isProd ? 'none' : 'lax',
     path: '/',
     domain,
     maxAge: DEFAULT_TTL * 1000,

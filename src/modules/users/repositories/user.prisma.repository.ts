@@ -11,13 +11,13 @@ export const UserRepositoryPrisma = {
     return prisma.user.findUnique({ where: { id } });
   },
   async findBySliqId(sliqId: string) {
-    return prisma.user.findUnique({ where: { sliq_id: `@${sliqId}` } });
+    return prisma.user.findUnique({ where: { sliq_id: `${sliqId}.sliq` } });
   },
   async create(data: { email: string; phone: string; firstName?: string | null; lastName?: string | null; passwordHash: string; sliqId?: string | null; referralCode?: string | null; walletAddress?: string | null; walletType?: string | null; encryptedPrivateKey?: string | null }) {
     // Use provided sliqId or generate a fallback
     const sliqIdToUse = data.sliqId 
-      ? `@${data.sliqId}` 
-      : `@${data.firstName || 'user'}_${Math.floor(Math.random() * 10000)}`;
+      ? `${data.sliqId}.sliq` 
+      : `${data.firstName || 'user'}_${Math.floor(Math.random() * 10000)}.sliq`;
     
     return prisma.user.create({
       data: {

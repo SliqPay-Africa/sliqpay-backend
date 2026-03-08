@@ -6,6 +6,7 @@ import { randomUUID } from 'crypto';
 import { env } from '../../../config/env.js';
 import { sendMail } from '../../../common/utils/email.js';
 import { generateWallet } from '../../../common/utils/wallet.js';
+import { registerSliqIdOnChain } from '../../../common/utils/sliqIdRegistry.js';
 
 const Repo = UserRepositoryPrisma;
 
@@ -68,6 +69,14 @@ export async function signup(fname: string, lname: string, email: string, passwo
   } catch (e) {
     // Non-fatal: account can be created later, but log in real system
   }
+
+  // Register SliqID on-chain (fire-and-forget, non-blocking)
+  if (user.sliq_id && user.wallet_address) {
+    registerSliqIdOnChain(user.sliq_id, user.wallet_address).catch(() => {
+      // Already logged inside the utility — swallow here
+    });
+  }
+
   const token = sign(user.id);
 
   // Send Welcome Email

@@ -15,11 +15,11 @@ const REGISTRY_ABI = [
   'function isSliqIDRegistered(string sliqId) external view returns (bool)',
 ];
 
-// Moonbase Alpha testnet RPC
-const MOONBASE_RPC_URL = process.env.MOONBASE_RPC_URL || 'https://rpc.api.moonbase.moonbeam.network';
+// Avalanche Fuji testnet RPC
+const FUJI_RPC_URL = process.env.FUJI_RPC_URL || 'https://api.avax-test.network/ext/bc/C/rpc';
 
-// Deployed MockSliqIDRegistry on Moonbase Alpha
-const REGISTRY_ADDRESS = process.env.SLIQ_ID_REGISTRY_ADDRESS || '0x79905D386eE36a5F98FE1E116aeEbbE7436Eda10';
+// Deployed MockSliqIDRegistry on Avalanche Fuji
+const REGISTRY_ADDRESS = process.env.SLIQ_ID_REGISTRY_ADDRESS || '0xA1b7Aad793601d9C6bcE03a2a2CD0B80eEE229b7';
 
 // Private key for the signing wallet (backend hot wallet)
 const SIGNER_PRIVATE_KEY = process.env.REGISTRY_SIGNER_PRIVATE_KEY || '';
@@ -42,7 +42,7 @@ export async function registerSliqIdOnChain(
   }
 
   try {
-    const provider = new ethers.JsonRpcProvider(MOONBASE_RPC_URL);
+    const provider = new ethers.JsonRpcProvider(FUJI_RPC_URL);
     const signer = new ethers.Wallet(SIGNER_PRIVATE_KEY, provider);
     const registry = new ethers.Contract(REGISTRY_ADDRESS, REGISTRY_ABI, signer);
 
@@ -68,7 +68,7 @@ export async function isSliqIdRegisteredOnChain(sliqId: string): Promise<boolean
   if (!REGISTRY_ADDRESS) return false;
 
   try {
-    const provider = new ethers.JsonRpcProvider(MOONBASE_RPC_URL);
+    const provider = new ethers.JsonRpcProvider(FUJI_RPC_URL);
     const registry = new ethers.Contract(REGISTRY_ADDRESS, REGISTRY_ABI, provider);
     return await registry.isSliqIDRegistered(sliqId);
   } catch {

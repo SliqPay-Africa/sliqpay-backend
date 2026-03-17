@@ -25,8 +25,12 @@ export async function authGuard(req: AuthenticatedRequest, _res: Response, next:
       }
     }
 
-    // Fallback to JWT cookie
-    const token = (req as any).cookies?.accessToken;
+    // Try Authorization: Bearer <token> header (cross-origin friendly)
+    const authHeader = req.headers.authorization;
+    const bearerToken = authHeader?.startsWith('Bearer ') ? authHeader.slice(7) : null;
+
+    // Fallback to JWT cookie or Bearer token
+    const token = (req as any).cookies?.accessToken || bearerToken;
     if (!token) return next({ status: 401, message: 'Unauthorized' });
     const payload: any = jwt.verify(token, env.JWT_SECRET);
     const userId = payload.sub as string;
@@ -72,7 +76,9 @@ export async function optionalAuth(req: AuthenticatedRequest, _res: Response, ne
         return next();
       }
     }
-    const token = (req as any).cookies?.accessToken;
+    const bearerHeader = req.headers.authorization;
+    const bearerTok = bearerHeader?.startsWith('Bearer ') ? bearerHeader.slice(7) : null;
+    const token = (req as any).cookies?.accessToken || bearerTok;
     if (!token) return next();
     const payload: any = jwt.verify(token, env.JWT_SECRET);
     const user = await UserRepositoryPrisma.findById(payload.sub as string);

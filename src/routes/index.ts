@@ -16,4 +16,5 @@ router.use('/user', user);
 router.use('/transaction', transaction);
 router.use('/waitlist', waitlist);
 router.use('/admin', admin);
+router.use('/pay-with-crypto', payment);
 export default router;

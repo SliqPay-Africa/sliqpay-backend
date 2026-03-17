@@ -1,8 +1,23 @@
-import { Response } from 'express';
+import { Request, Response } from 'express';
 import { PrismaClient } from '@prisma/client';
 import { AuthenticatedRequest } from '../../../common/middleware/auth.js';
 
 const prisma = new PrismaClient();
+
+export const checkSliqIdAvailability = async (req: Request, res: Response) => {
+  const { sliqId } = req.query;
+
+  if (!sliqId || typeof sliqId !== 'string' || !/^@[a-zA-Z0-9_-]{3,}\.sliq$/.test(sliqId)) {
+    return res.status(400).json({ available: false, error: 'Invalid SliqID format' });
+  }
+
+  const existing = await prisma.user.findFirst({
+    where: { sliq_id: { equals: sliqId, mode: 'insensitive' } },
+    select: { id: true }
+  });
+
+  return res.json({ available: existing === null });
+};
 
 export const updateProfile = async (req: AuthenticatedRequest, res: Response) => {
   const { firstName, lastName, phone } = req.body;

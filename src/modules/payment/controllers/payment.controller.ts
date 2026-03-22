@@ -1,7 +1,7 @@
-import { Request, Response, NextFunction } from 'express';
+import { Request, Response } from 'express';
 import * as paymentService from '../services/payment.service.js';
 
-export const payCrypto = async (req: Request, res: Response, next: NextFunction) => {
+export const payCrypto = async (req: Request, res: Response) => {
   try {
     const userId = (req as any).user?.id || (req as any).user?.sub;
     if (!userId) return res.status(401).json({ error: 'Unauthorized' });
@@ -17,12 +17,12 @@ export const payCrypto = async (req: Request, res: Response, next: NextFunction)
     res.json(result);
   } catch (error: any) {
     console.error('payCrypto error:', error);
-    next(error);
+    res.status(500).json({ error: error.message || 'Payment failed' });
   }
 };
 
 /** Custodial airtime purchase — backend signs the on-chain tx using the user's stored wallet */
-export const custodialAirtime = async (req: Request, res: Response, next: NextFunction) => {
+export const custodialAirtime = async (req: Request, res: Response) => {
   try {
     const userId = (req as any).user?.id || (req as any).user?.sub;
     if (!userId) return res.status(401).json({ error: 'Unauthorized' });

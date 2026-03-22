@@ -5,13 +5,13 @@ import jwt from 'jsonwebtoken';
 import { randomUUID } from 'crypto';
 import { env } from '../../../config/env.js';
 import { sendMail } from '../../../common/utils/email.js';
-import { generateWallet } from '../../../common/utils/wallet.js';
+// import { generateWallet } from '../../../common/utils/wallet.js';
 import { registerSliqIdOnChain } from '../../../common/utils/sliqIdRegistry.js';
 
 const Repo = UserRepositoryPrisma;
 
 function sign(userId: string) {
-  return jwt.sign({ sub: userId }, env.JWT_SECRET, { expiresIn: '15m' });
+  return jwt.sign({ sub: userId }, env.JWT_SECRET, { expiresIn: '7d' });
 }
 
 export function publicUser(u: any) {
@@ -54,14 +54,14 @@ export async function signup(fname: string, lname: string, email: string, passwo
   
   const passwordHash = bcrypt.hashSync(password, 10);
   
-  // Auto-generate a custodial EVM wallet
-  const wallet = generateWallet();
-  
-  const user = await Repo.create({ 
+  // Auto-generate a custodial EVM wallet — disabled for now
+  // const wallet = generateWallet();
+
+  const user = await Repo.create({
     email, firstName: fname, lastName: lname, passwordHash, phone: phoneToUse, sliqId, referralCode,
-    walletAddress: wallet.address,
-    walletType: 'custodial',
-    encryptedPrivateKey: wallet.encryptedPrivateKey,
+    // walletAddress: wallet.address,
+    // walletType: 'custodial',
+    // encryptedPrivateKey: wallet.encryptedPrivateKey,
   });
   // Create a default NGN account with 25,000 starting balance
   try {
